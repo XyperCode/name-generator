@@ -1,0 +1,221 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
+    id 'java'
+}
+
+group 'me.qboi'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations.all {
+    //noinspection GrUnresolvedAccess
+    resolutionStrategy {
+        //noinspection GrUnresolvedAccess
+        dependencySubstitution {
+            def os = System.getProperty("os.name").toLowerCase()
+            if (os.contains("windows")) {
+                //noinspection GradlePackageUpdate
+                //noinspection GrUnresolvedAccess
+                substitute module('org.eclipse.platform:org.eclipse.swt.${osgi.platform}') with module("org.eclipse.platform:org.eclipse.swt.win32.win32.x86_64:3.114.0")
+            } else if (os.contains("linux")) {
+                //noinspection GradlePackageUpdate
+                //noinspection GrUnresolvedAccess
+                substitute module('org.eclipse.platform:org.eclipse.swt.${osgi.platform}') with module("org.eclipse.platform:org.eclipse.swt.gtk.linux.x86_64:3.114.0")
+            } else if (os.contains("mac")) {
+                //noinspection GradlePackageUpdate
+                //noinspection GrUnresolvedAccess
+                substitute module('org.eclipse.platform:org.eclipse.swt.${osgi.platform}') with module("org.eclipse.platform:org.eclipse.swt.cocoa.macosx.x86_64:3.114.0")
+            }
+        }
+    }
+}
+
+configurations {
+    win32 {
+        canBeResolved true
+    }
+    linux {
+        canBeResolved true
+    }
+    macosx {
+        canBeResolved true
+    }
+    common {
+        canBeResolved true
+    }
+}
+
+configurations {
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.10"
+    common "org.jetbrains.kotlin:kotlin-stdlib:1.6.10"
+    implementation('org.eclipse.platform:org.eclipse.swt:3.118.0') {
+        //noinspection GroovyAssignabilityCheck
+        exclude group: 'org.eclipse.platform', module: 'org.eclipse.swt.${osgi.platform}'
+    }
+    common('org.eclipse.platform:org.eclipse.swt:3.118.0') {
+        //noinspection GroovyAssignabilityCheck
+        exclude group: 'org.eclipse.platform', module: 'org.eclipse.swt.${osgi.platform}'
+    }
+    implementation('org.eclipse.platform:org.eclipse.jface:3.24.0') {
+        //noinspection GroovyAssignabilityCheck
+        exclude group: 'org.eclipse.platform', module: 'org.eclipse.swt.${osgi.platform}'
+    }
+    common('org.eclipse.platform:org.eclipse.jface:3.24.0') {
+        //noinspection GroovyAssignabilityCheck
+        exclude group: 'org.eclipse.platform', module: 'org.eclipse.swt.${osgi.platform}'
+    }
+
+    win32 'org.eclipse.platform:org.eclipse.swt.win32.win32.x86_64:3.118.0'
+    linux 'org.eclipse.platform:org.eclipse.swt.gtk.linux.x86_64:3.118.0'
+    macosx 'org.eclipse.platform:org.eclipse.swt.cocoa.macosx.x86_64:3.118.0'
+
+    def os = System.getProperty("os.name").toLowerCase()
+    if (os.contains("windows")) {
+        implementation("org.eclipse.platform:org.eclipse.swt.win32.win32.x86_64:3.118.0")
+        implementation("org.eclipse.platform:org.eclipse.swt.browser.chromium.win32.win32.x86_64:3.116.0")
+    } else if (os.contains("linux")) {
+        implementation("org.eclipse.platform:org.eclipse.swt.gtk.linux.x86_64:3.118.0")
+        implementation("org.eclipse.platform:org.eclipse.swt.browser.chromium.gtk.linux.x86_64:3.116.0")
+    } else if (os.contains("mac")) {
+        implementation("org.eclipse.platform:org.eclipse.swt.cocoa.macosx.x86_64:3.118.0")
+        implementation("org.eclipse.platform:org.eclipse.swt.browser.chromium.cocoa.macosx.x86_64:3.116.0")
+    }
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+}
+
+jar {
+    from {
+        (configurations.common).collect {
+            it.getPath().startsWith(projectDir.getPath()) ? [] : it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    exclude("META-INF/*.RSA", "META-INF/*.DSA", "META-INF/*.SF")
+
+    //noinspection GroovyAssignabilityCheck
+    manifest {
+        //noinspection GroovyAssignabilityCheck
+        attributes 'Implementation-Title': 'QBubbles',
+                'Implementation-Vendor': 'QTech Community',
+                'Implementation-Version': "1.0-indev1",
+                'Main-Class': 'com.ultreon.explorers.nbt.NbtExplorer',
+                'Multi-Release': 'true'
+    }
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+}
+
+task win32Jar(type: Jar) {
+    from {
+        (configurations.common + configurations.win32).collect {
+            it.getPath().startsWith(projectDir.getPath()) ? [] : it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    //noinspection GroovyAssignabilityCheck
+    for (task in tasks.withType(AbstractCompile)) {
+        for (file in ((AbstractCompile) task).outputs) {
+            from file
+        }
+    }
+    for (file in processResources.outputs) {
+        from file
+    }
+    exclude("META-INF/*.RSA", "META-INF/*.DSA", "META-INF/*.SF")
+
+    //noinspection GroovyAssignabilityCheck
+    manifest {
+        //noinspection GroovyAssignabilityCheck
+        attributes 'Implementation-Title': 'QBubbles',
+                'Implementation-Vendor': 'QTech Community',
+                'Implementation-Version': "1.0-indev1",
+                'Main-Class': 'com.ultreon.explorers.nbt.NbtExplorer',
+                'Multi-Release': 'true'
+    }
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+    classifier "win32"
+}
+
+task linuxJar(type: Jar) {
+    dependsOn(":core:jar")
+
+    from {
+        (configurations.common + configurations.linux).collect {
+            it.getPath().startsWith(projectDir.getPath()) ? [] : it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    //noinspection GroovyAssignabilityCheck
+    for (task in tasks.withType(AbstractCompile)) {
+        for (file in ((AbstractCompile) task).outputs) {
+            from file
+        }
+    }
+    for (file in processResources.outputs) {
+        from file
+    }
+    exclude("META-INF/*.RSA", "META-INF/*.DSA", "META-INF/*.SF")
+
+    //noinspection GroovyAssignabilityCheck
+    manifest {
+        //noinspection GroovyAssignabilityCheck
+        attributes 'Implementation-Title': 'QBubbles',
+                'Implementation-Vendor': 'QTech Community',
+                'Implementation-Version': "1.0-indev1",
+                'Main-Class': 'com.ultreon.explorers.nbt.NbtExplorer',
+                'Multi-Release': 'true'
+    }
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+    classifier "linux"
+}
+
+task macosxJar(type: Jar) {
+    from {
+        (configurations.common + configurations.macosx).collect {
+            it.getPath().startsWith(projectDir.getPath()) ? [] : it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    //noinspection GroovyAssignabilityCheck
+    for (task in tasks.withType(AbstractCompile)) {
+        for (file in ((AbstractCompile) task).outputs) {
+            from file
+        }
+    }
+    for (file in processResources.outputs) {
+        from file
+    }
+    exclude("META-INF/*.RSA", "META-INF/*.DSA", "META-INF/*.SF")
+
+    //noinspection GroovyAssignabilityCheck
+    manifest {
+        //noinspection GroovyAssignabilityCheck
+        attributes 'Implementation-Title': 'QBubbles',
+                'Implementation-Vendor': 'QTech Community',
+                'Implementation-Version': "1.0-indev1",
+                'Main-Class': 'com.ultreon.explorers.nbt.NbtExplorer',
+                'Multi-Release': 'true'
+    }
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+    classifier "macosx"
+}
+
+task allJar {
+    dependsOn win32Jar
+    dependsOn linuxJar
+    dependsOn macosxJar
+}
+
+test {
+    useJUnitPlatform()
+}
