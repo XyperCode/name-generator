@@ -140,7 +140,7 @@ task win32Jar(type: Jar) {
         attributes 'Implementation-Title': 'QBubbles',
                 'Implementation-Vendor': 'QTech Community',
                 'Implementation-Version': "1.0-indev1",
-                'Main-Class': 'com.ultreon.explorers.nbt.NbtExplorer',
+                'Main-Class': 'me.qboi.generators.words.Main',
                 'Multi-Release': 'true'
     }
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
@@ -148,8 +148,6 @@ task win32Jar(type: Jar) {
 }
 
 task linuxJar(type: Jar) {
-    dependsOn(":core:jar")
-
     from {
         (configurations.common + configurations.linux).collect {
             it.getPath().startsWith(projectDir.getPath()) ? [] : it.isDirectory() ? it : zipTree(it)
@@ -173,14 +171,14 @@ task linuxJar(type: Jar) {
         attributes 'Implementation-Title': 'QBubbles',
                 'Implementation-Vendor': 'QTech Community',
                 'Implementation-Version': "1.0-indev1",
-                'Main-Class': 'com.ultreon.explorers.nbt.NbtExplorer',
+                'Main-Class': 'me.qboi.generators.words.Main',
                 'Multi-Release': 'true'
     }
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
     classifier "linux"
 }
 
-task macosxJar(type: Jar) {
+task macosJar(type: Jar) {
     from {
         (configurations.common + configurations.macosx).collect {
             it.getPath().startsWith(projectDir.getPath()) ? [] : it.isDirectory() ? it : zipTree(it)
@@ -203,17 +201,17 @@ task macosxJar(type: Jar) {
         attributes 'Implementation-Title': 'QBubbles',
                 'Implementation-Vendor': 'QTech Community',
                 'Implementation-Version': "1.0-indev1",
-                'Main-Class': 'com.ultreon.explorers.nbt.NbtExplorer',
+                'Main-Class': 'me.qboi.generators.words.Main',
                 'Multi-Release': 'true'
     }
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
-    classifier "macosx"
+    classifier "macos"
 }
 
 task allJar {
     dependsOn win32Jar
     dependsOn linuxJar
-    dependsOn macosxJar
+    dependsOn macosJar
 }
 
 test {

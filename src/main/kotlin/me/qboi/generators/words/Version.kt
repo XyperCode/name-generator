@@ -8,6 +8,7 @@ enum class Version(val versionName: String, private val builder: (Long) -> WordG
     GEN_3("v3.0", { WordGenerator3(it, WordGenerator3.Config().minSize(3).maxSize(7).named()) }),
     GEN_4("v4.0", { WordGenerator4(it, WordGenerator4.Config().minSize(3).maxSize(7).named()) }),
     GEN_5("v5.0", { WordGenerator5(it, WordGenerator5.Config().minSize(3).maxSize(7).named()) }),
+    GEN_5_1("v5.1", { WordGenerator5_1(it, WordGenerator5_1.Config().minSize(3).maxSize(7).named()) }),
     ;
 
     fun build(seed: Long): WordGenerator {
